@@ -13,11 +13,9 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 @Slf4j
-
 public class OrderService {
 
     private final OrderRepository orderRepository;
-
     private final RestTemplate restTemplate;
 
     public OrderService(OrderRepository orderRepository, RestTemplateBuilder restTemplateBuilder) {
@@ -29,7 +27,6 @@ public class OrderService {
     public TransactionResponse saveOrder(TransactionRequest transactionRequest) {
 
         log.info("OrderService : saveOrder(-)");
-
         Order order = transactionRequest.getOrder();
         Payment payment = transactionRequest.getPayment();
         payment.setOrderId(order.getId());
@@ -39,11 +36,8 @@ public class OrderService {
         String responseMessage = paymentResponse
                 .getPaymentStatus()
                 .equals(PAYMENT_STATUS.SUCCESS) ? "Payment Success" : "Payment Failed";
-
         orderRepository.save(order);
         return new TransactionResponse(order, paymentResponse.getAmount(), paymentResponse.getTransactionId(), responseMessage);
-
         //As soon as order is placed , it should go to payment service, hence do a rest call.
     }
-
 }
