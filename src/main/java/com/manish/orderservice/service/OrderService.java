@@ -8,6 +8,7 @@ import com.manish.orderservice.entity.Order;
 import com.manish.orderservice.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,12 +17,13 @@ import org.springframework.web.client.RestTemplate;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+
     private final RestTemplate restTemplate;
 
-    public OrderService(OrderRepository orderRepository, RestTemplateBuilder restTemplateBuilder) {
+    public OrderService(OrderRepository orderRepository, RestTemplate restTemplate) {
 
         this.orderRepository = orderRepository;
-        this.restTemplate = restTemplateBuilder.build();
+        this.restTemplate = restTemplate;
     }
 
     public TransactionResponse saveOrder(TransactionRequest transactionRequest) {
@@ -32,7 +34,8 @@ public class OrderService {
         payment.setOrderId(order.getId());
         payment.setAmount(order.getPrice());
         //rest call
-        Payment paymentResponse = restTemplate.postForObject("http://localhost:8086/api/v1/payment/performPayment", payment, Payment.class);
+        //eureka implemented: calling the service from taking the host and port from eureka
+        Payment paymentResponse = restTemplate.postForObject("http://payment-service/api/v1/payment/performPayment", payment, Payment.class);
         String responseMessage = paymentResponse
                 .getPaymentStatus()
                 .equals(PAYMENT_STATUS.SUCCESS) ? "Payment Success" : "Payment Failed";
